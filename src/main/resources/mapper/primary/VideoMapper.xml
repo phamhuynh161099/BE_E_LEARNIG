@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.sakata.boilerplate.mapper.primary.VideoMapper">
 
-    <resultMap id="PermissionRM" type="com.sakata.boilerplate.models.Video">
-        <id     property="id"          column="id"/>
-        <result property="name"        column="name"/>
-        <result property="resource"    column="resource"/>
-        <result property="action"      column="action"/>
-        <result property="description" column="description"/>
-        <result property="category"    column="category"/>
+    <resultMap id="VideoRM" type="com.sakata.boilerplate.models.Video">
+        <id property="id" column="id" />
+        <result property="originalFileName" column="original_file_name" />
+        <result property="originalPath" column="original_path" />
+        <result property="encoded720pPath" column="encoded_720p_path" />
+        <result property="encoded1080pPath" column="encoded_1080p_path" />
+        <result property="status" column="status" />
+        <result property="fileSize" column="file_size" />
+        <result property="duration" column="duration" />
+        <result property="createdAt" column="created_at" />
     </resultMap>
 
-    <select id="findByIds" resultMap="PermissionRM">
-        SELECT id, name, resource, action, description FROM permissions
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
-    </select>
 
-    <select id="findByRoleId" resultMap="PermissionRM">
-        SELECT p.id, p.name, p.resource, p.action, p.description
-        FROM permissions p
-        JOIN role_permissions rp ON rp.permission_id = p.id
-        WHERE rp.role_id = #{roleId}
-        ORDER BY p.resource, p.action
+    <select id="findById" resultMap="VideoRM">
+        SELECT 
+            id,
+            original_file_name,
+            original_path,
+            encoded_720p_path, 
+            encoded_1080p_path, 
+            status, file_size,
+            duration, 
+            created_at 
+        FROM videos
+        WHERE id = #{id}
     </select>
-
 </mapper>
