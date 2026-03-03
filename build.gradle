@@ -1,0 +1,105 @@
+plugins {
+	id 'java'
+	id 'war'
+	id 'org.springframework.boot' version '3.5.11'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.sakata'
+version = '0.0.1-SNAPSHOT'
+description = 'RBAC Boilerplate'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// Thư viện API chính
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    
+    // Thư viện thực thi (Runtime)
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    
+    // Thư viện hỗ trợ xử lý JSON (Jackson)
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// Thư viện hỗ trợ Validation (Bean Validation)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// MyBatis Spring Boot Starter (Tương thích Spring Boot 3)
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+
+    // MyBatis Dynamic SQL (Thư viện hỗ trợ viết query type-safe)
+    implementation 'org.mybatis.dynamic-sql:mybatis-dynamic-sql:1.5.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+	// ==================================
+
+	// Web + Security + Validation
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // MyBatis
+    // Lưu ý: Thay ${mybatis-spring-boot.version} bằng phiên bản cụ thể (VD: 3.0.3)
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+
+    // Databases
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Redis (Cache + JWT Blacklist)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Flyway (Migration)
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // JWT (JJWT)
+    // Lưu ý: Thay ${jjwt.version} bằng phiên bản cụ thể (VD: 0.12.3)
+    // def jjwtVersion = '0.12.3'
+    // implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    // runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    // runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'	
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

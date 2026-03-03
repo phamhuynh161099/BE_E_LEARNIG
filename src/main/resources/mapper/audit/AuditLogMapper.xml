@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sakata.boilerplate.mapper.audit.AuditLogMapper">
+
+    <resultMap id="AuditLogRM" type="com.sakata.boilerplate.audit.models.AuditLog">
+        <id     property="id"          column="id"/>
+        <result property="actorId"     column="actor_id"/>
+        <result property="actorName"   column="actor_name"/>
+        <result property="action"      column="action"/>
+        <result property="resource"    column="resource"/>
+        <result property="resourceId"  column="resource_id"/>
+        <result property="oldValue"    column="old_value"/>
+        <result property="newValue"    column="new_value"/>
+        <result property="ipAddress"   column="ip_address"/>
+        <result property="userAgent"   column="user_agent"/>
+        <result property="requestUri"  column="request_uri"/>
+        <result property="httpMethod"  column="http_method"/>
+        <result property="status"      column="status"/>
+        <result property="errorMsg"    column="error_msg"/>
+        <result property="createdAt"   column="created_at"/>
+    </resultMap>
+
+    <!--
+        Dynamic query với các filter tuỳ chọn.
+        PostgreSQL JSONB operators hoạt động tốt ở đây.
+    -->
+    <select id="findByFilter" resultMap="AuditLogRM">
+        SELECT * FROM audit_logs
+        <where>
+            <if test="actorId != null">
+                AND actor_id = #{actorId}
+            </if>
+            <if test="action != null and action != ''">
+                AND action = #{action}
+            </if>
+            <if test="resource != null and resource != ''">
+                AND resource = #{resource}
+            </if>
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="fromDate != null">
+                AND created_at &gt;= #{fromDate}
+            </if>
+            <if test="toDate != null">
+                AND created_at &lt;= #{toDate}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+</mapper>

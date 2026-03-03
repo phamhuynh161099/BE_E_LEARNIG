@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sakata.boilerplate.mapper.primary.RoleMapper">
+
+    <resultMap id="PermissionRM" type="com.sakata.boilerplate.models.Permission">
+        <id     property="id"          column="p_id"/>
+        <result property="name"        column="p_name"/>
+        <result property="resource"    column="p_resource"/>
+        <result property="action"      column="p_action"/>
+        <result property="description" column="p_desc"/>
+    </resultMap>
+
+    <resultMap id="RoleFullRM" type="com.sakata.boilerplate.models.Role">
+        <id     property="id"          column="r_id"/>
+        <result property="name"        column="r_name"/>
+        <result property="description" column="r_desc"/>
+        <result property="createdAt"   column="r_created_at"/>
+        <collection property="permissions" ofType="com.sakata.boilerplate.models.Permission" resultMap="PermissionRM"/>
+    </resultMap>
+
+    <sql id="selectRoleFull">
+        SELECT r.id AS r_id, r.name AS r_name, r.description AS r_desc, r.created_at AS r_created_at,
+               p.id AS p_id, p.name AS p_name, p.resource AS p_resource, p.action AS p_action, p.description AS p_desc
+        FROM roles r
+        LEFT JOIN role_permissions rp ON rp.role_id = r.id
+        LEFT JOIN permissions      p  ON p.id       = rp.permission_id
+    </sql>
+
+
+    <select id="findAll"    resultMap="RoleFullRM"><include refid="selectRoleFull"/> ORDER BY r.id</select>
+    <select id="findById"   resultMap="RoleFullRM"><include refid="selectRoleFull"/> WHERE r.id   = #{id}</select>
+    <select id="findByName" resultMap="RoleFullRM"><include refid="selectRoleFull"/> WHERE r.name = #{name}</select>
+    
+
+    <select id="findByIds" resultMap="RoleFullRM">
+        <include refid="selectRoleFull"/>
+        WHERE r.id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <insert id="insertMultiplePermissionsForRole">
+        INSERT INTO role_permissions (role_id, permission_id) 
+        VALUES 
+        <foreach collection="permissionIds" item="permissionId" separator=",">
+            (#{roleId}, #{permissionId})
+        </foreach>
+    </insert>
+
+</mapper>

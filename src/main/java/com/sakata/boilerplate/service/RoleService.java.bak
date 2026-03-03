@@ -1,0 +1,58 @@
+package com.sakata.boilerplate.service;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sakata.boilerplate.dto.Permission.PermissionResponse;
+import com.sakata.boilerplate.dto.Role.CreateRoleRequest;
+import com.sakata.boilerplate.dto.Role.RoleResponse;
+import com.sakata.boilerplate.repository.PermissionRepository;
+import com.sakata.boilerplate.repository.RoleRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class RoleService {
+
+    private final RoleRepository roleRepo;
+    private final PermissionRepository permissionRepo;
+
+    @Transactional(readOnly = true)
+    public List<RoleResponse> getAll() {
+        return roleRepo.findAll().stream().map(this::toResponse).toList();
+    }
+
+    public RoleResponse create(CreateRoleRequest req) {
+        if (roleRepo.findByName(req.name()).isPresent())
+            throw new IllegalArgumentException("Role already exists");
+        com.sakata.boilerplate.models.Role role = com.sakata.boilerplate.models.Role.builder().name(req.name())
+                .description(req.description()).build();
+        return toResponse(roleRepo.save(role));
+    }
+
+    public RoleResponse assignPermissions(Long roleId, Set<Long> permissionIds) {
+        com.sakata.boilerplate.models.Role role = roleRepo.findById(roleId)
+                .orElseThrow(() -> new NoSuchElementException("Role not found"));
+        role.setPermissions(new HashSet<>(permissionRepo.findAllById(permissionIds)));
+        return toResponse(roleRepo.save(role));
+    }
+
+    public void delete(Long id) {
+        roleRepo.deleteById(id);
+    }
+
+    private RoleResponse toResponse(com.sakata.boilerplate.models.Role r) {
+        var perms = r.getPermissions().stream()
+                .map(p -> new PermissionResponse(p.getId(), p.getName(), p.getResource(), p.getAction(),
+                        p.getDescription()))
+                .toList();
+        return new RoleResponse(r.getId(), r.getName(), r.getDescription(), perms);
+    }
+}

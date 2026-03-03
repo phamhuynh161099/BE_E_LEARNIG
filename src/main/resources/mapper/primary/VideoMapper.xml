@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sakata.boilerplate.mapper.primary.VideoMapper">
+
+    <resultMap id="PermissionRM" type="com.sakata.boilerplate.models.Video">
+        <id     property="id"          column="id"/>
+        <result property="name"        column="name"/>
+        <result property="resource"    column="resource"/>
+        <result property="action"      column="action"/>
+        <result property="description" column="description"/>
+        <result property="category"    column="category"/>
+    </resultMap>
+
+    <select id="findByIds" resultMap="PermissionRM">
+        SELECT id, name, resource, action, description FROM permissions
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <select id="findByRoleId" resultMap="PermissionRM">
+        SELECT p.id, p.name, p.resource, p.action, p.description
+        FROM permissions p
+        JOIN role_permissions rp ON rp.permission_id = p.id
+        WHERE rp.role_id = #{roleId}
+        ORDER BY p.resource, p.action
+    </select>
+
+</mapper>

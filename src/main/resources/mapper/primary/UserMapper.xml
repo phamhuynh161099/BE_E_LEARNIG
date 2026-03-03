@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sakata.boilerplate.mapper.primary.UserMapper">
+
+    <resultMap id="PermissionRM" type="com.sakata.boilerplate.models.Permission">
+        <id     property="id"          column="p_id"/>
+        <result property="name"        column="p_name"/>
+        <result property="resource"    column="p_resource"/>
+        <result property="action"      column="p_action"/>
+        <result property="description" column="p_desc"/>
+    </resultMap>
+
+    <resultMap id="RoleRM" type="com.sakata.boilerplate.models.Role">
+        <id     property="id"          column="r_id"/>
+        <result property="name"        column="r_name"/>
+        <result property="description" column="r_desc"/>
+        <result property="createdAt"   column="r_created_at"/>
+        <collection property="permissions" ofType="com.sakata.boilerplate.models.Permission" resultMap="PermissionRM"/>
+    </resultMap>
+
+    <resultMap id="UserFullRM" type="com.sakata.boilerplate.models.User">
+        <id     property="id"        column="u_id"/>
+        <result property="username"  column="u_username"/>
+        <result property="email"     column="u_email"/>
+        <result property="password"  column="u_password"/>
+        <result property="enabled"   column="u_enabled"/>
+        <result property="createdAt" column="u_created_at"/>
+        <result property="updatedAt" column="u_updated_at"/>
+        <collection property="roles" ofType="com.sakata.boilerplate.models.Role" resultMap="RoleRM"/>
+    </resultMap>
+
+    <sql id="selectUserFull">
+        SELECT
+            u.id           AS u_id,
+            u.username     AS u_username,
+            u.email        AS u_email,
+            u.password     AS u_password,
+            u.enabled      AS u_enabled,
+            u.created_at   AS u_created_at,
+            u.updated_at   AS u_updated_at,
+            r.id           AS r_id,
+            r.name         AS r_name,
+            r.description  AS r_desc,
+            r.created_at   AS r_created_at,
+            p.id           AS p_id,
+            p.name         AS p_name,
+            p.resource     AS p_resource,
+            p.action       AS p_action,
+            p.description  AS p_desc
+        FROM users u
+        LEFT JOIN user_roles       ur ON ur.user_id       = u.id
+        LEFT JOIN roles            r  ON r.id             = ur.role_id
+        LEFT JOIN role_permissions rp ON rp.role_id       = r.id
+        LEFT JOIN permissions      p  ON p.id             = rp.permission_id
+    </sql>
+
+    <select id="findById" resultMap="UserFullRM">
+        <include refid="selectUserFull"/>
+        WHERE u.id = #{id}
+    </select>
+
+    <select id="findByUsername" resultMap="UserFullRM">
+        <include refid="selectUserFull"/>
+        WHERE u.username = #{username}
+    </select>
+
+    <select id="findAll" resultMap="UserFullRM">
+        <include refid="selectUserFull"/>
+        ORDER BY u.id
+    </select>
+
+
+    <insert id="insertMultipleRoleForUser">
+        INSERT INTO user_roles (user_id, role_id) 
+        VALUES 
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{user_id}, #{roleId})
+        </foreach>
+    </insert>
+
+
+    <update id="updateUserWithPasswordCondition">
+        UPDATE users
+        <set>
+            username = #{user.username},
+            email = #{user.email},
+            <if test="encodedPassword != null and encodedPassword != ''">
+                password = #{encodedPassword}
+            </if>
+        </set>
+        WHERE id = #{user.id}
+    </update>
+
+</mapper>
