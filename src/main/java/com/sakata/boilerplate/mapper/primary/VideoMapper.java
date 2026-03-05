@@ -1,5 +1,6 @@
 package com.sakata.boilerplate.mapper.primary;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Insert;
@@ -31,4 +32,7 @@ public interface VideoMapper {
             "WHERE id = #{id}" +
             "</script>")
     int updateVideoDynamic(Video video);
+
+
+    List<Video> findAll();
 }

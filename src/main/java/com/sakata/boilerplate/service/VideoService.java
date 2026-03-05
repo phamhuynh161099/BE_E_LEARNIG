@@ -3,6 +3,7 @@ package com.sakata.boilerplate.service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -121,11 +122,10 @@ public class VideoService {
 
             String originalPath = video.getOriginalPath();
             // String outputFileName = videoId + ".mp4";
-            
+
             // Lấy duration
             String duration = encodingService.getVideoDuration(originalPath);
             video.setDuration(duration);
-
 
             /**
              * Xử lý output name
@@ -138,14 +138,14 @@ public class VideoService {
 
             // Encode 720p
             log.info("Starting 720p encoding for video {}", videoId);
-            String path720 = encodingService.encodeTo720p(realFileName, outputFileName,folderId);
+            String path720 = encodingService.encodeTo720p(realFileName, outputFileName, folderId);
             video.setEncoded720Path(path720);
             videoMapper.updateVideoDynamic(video);
 
             // Encode 1080p
             log.info("Starting 1080p encoding for video {}", videoId);
             String path1080 = encodingService.encodeTo1080p(realFileName,
-                    outputFileName,folderId);
+                    outputFileName, folderId);
             video.setEncoded1080Path(path1080);
 
             video.setStatus("COMPLETED");
@@ -166,7 +166,14 @@ public class VideoService {
     /**
      * Lấy thông tin video theo ID
      */
-    // public Video getVideo(Long id) {
-    // return videoRepository.findById(id).orElse(null);
-    // }
+    public Video getVideo(Long id) {
+        var video =  videoMapper.findById(id).orElse(null);
+        System.out.println(":::getVideo"+video);
+        return video;
+    }
+
+
+    public List<Video> getAllVideos() {
+        return videoMapper.findAll();
+    }
 }

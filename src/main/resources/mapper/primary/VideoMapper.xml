@@ -7,8 +7,8 @@
         <id property="id" column="id" />
         <result property="originalFileName" column="original_file_name" />
         <result property="originalPath" column="original_path" />
-        <result property="encoded720pPath" column="encoded_720p_path" />
-        <result property="encoded1080pPath" column="encoded_1080p_path" />
+        <result property="encoded720Path" column="encoded_720p_path" />
+        <result property="encoded1080Path" column="encoded_1080p_path" />
         <result property="status" column="status" />
         <result property="fileSize" column="file_size" />
         <result property="duration" column="duration" />
@@ -28,5 +28,19 @@
             created_at 
         FROM videos
         WHERE id = #{id}
+    </select>
+
+
+     <select id="findAll" resultMap="VideoRM">
+        SELECT 
+            id,
+            original_file_name,
+            original_path,
+            encoded_720p_path, 
+            encoded_1080p_path, 
+            status, file_size,
+            duration, 
+            created_at 
+        FROM videos
     </select>
 </mapper>
