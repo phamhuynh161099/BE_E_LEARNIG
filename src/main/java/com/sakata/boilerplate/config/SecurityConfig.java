@@ -61,33 +61,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // @Bean
-    // CorsConfigurationSource corsSource() {
-    // var cfg = new CorsConfiguration();
-    // cfg.setAllowedOrigins(List.of(allowedOrigins.split(",")));
-    // cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS",
-    // "PATCH"));
-    // cfg.setAllowedHeaders(List.of("*"));
-    // cfg.setAllowCredentials(true);
-    // var src = new UrlBasedCorsConfigurationSource();
-    // src.registerCorsConfiguration("/**", cfg);
-    // return src;
-    // }
-
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    // CorsConfiguration config = new CorsConfiguration();
-    // config.setAllowedOriginPatterns(List.of("*"));
-    // config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    // config.setAllowedHeaders(List.of("*"));
-    // config.setAllowCredentials(true);
-
-    // UrlBasedCorsConfigurationSource source = new
-    // UrlBasedCorsConfigurationSource();
-    // source.registerCorsConfiguration("/**", config);
-    // return source;
-    // }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
