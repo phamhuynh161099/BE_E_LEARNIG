@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sakata.boilerplate.mapper.primary.TrackingVideoMapper">
+
+    <resultMap id="TrackingVideoRM" type="com.sakata.boilerplate.models.TrackingVideo">
+        <id property="id" column="id" />
+        <result property="jobId" column="job_id" />
+        <result property="videoId" column="video_id" />
+        <result property="status" column="status" />
+        <result property="percentage" column="percentage" />
+        <result property="currentTime" column="currentTime" />
+        <result property="timeSeconds" column="timeSeconds" />
+        <result property="totalDuration" column="total_duration" />
+        <result property="fps" column="fps" />
+        <result property="speed" column="speed" />
+        <result property="estimatedSecondsLeft" column="estimated_secondsLeft" />
+        <result property="errorMessage" column="error_message" />
+        <result property="resolution" column="resolution" />
+        <result property="outputPath" column="outputPath" />
+
+    </resultMap>
+
+    <update id="updateDynamic"> UPDATE tracking_video <set>
+            <if test="videoId != null">video_id = #{videoId},</if>
+            <if test="status != null">status =
+        #{status},</if>
+            <if test="percentage != 0">percentage = #{percentage},</if>
+            <if
+                test="currentTime != null">current_time_str = #{currentTime},</if>
+            <if
+                test="timeSeconds != 0">time_seconds = #{timeSeconds},</if>
+            <if
+                test="totalDuration != 0">total_duration = #{totalDuration},</if>
+            <if test="fps != 0">fps
+        = #{fps},</if>
+            <if test="speed != 0">speed = #{speed},</if>
+            <if
+                test="estimatedSecondsLeft != 0">estimated_seconds_left = #{estimatedSecondsLeft},</if>
+            <if
+                test="errorMessage != null">error_message = #{errorMessage},</if>
+            <if
+                test="resolution != null">resolution = #{resolution},</if>
+            <if
+                test="outputPath != null">output_path = #{outputPath}</if>
+        </set> WHERE
+        job_id = #{jobId} </update>
+</mapper>

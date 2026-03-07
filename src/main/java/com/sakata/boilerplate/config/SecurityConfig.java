@@ -56,6 +56,7 @@ public class SecurityConfig {
                         // .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ← cho phép preflight
                         // .requestMatchers("/api/videos/stream/**").permitAll() // ⛽ NEED REMOVE
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/api/videos/progress/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

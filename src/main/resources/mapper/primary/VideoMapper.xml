@@ -16,6 +16,22 @@
     </resultMap>
 
 
+
+    <resultMap id="TrackingVideoVO" type="com.sakata.boilerplate.models.vo.TrackingVideoVO">
+        <id property="id" column="id" />
+        <result property="originalFileName" column="original_file_name" />
+        <result property="originalPath" column="original_path" />
+        <result property="encoded720Path" column="encoded_720p_path" />
+        <result property="encoded1080Path" column="encoded_1080p_path" />
+        <result property="status" column="tv_status" />
+        <result property="fileSize" column="file_size" />
+        <result property="duration" column="duration" />
+        <result property="createdAt" column="created_at" />
+        <result property="jobId" column="job_id" />
+        <result property="resolution" column="tv_resolution" />
+    </resultMap>
+
+
     <select id="findById" resultMap="VideoRM">
         SELECT 
             id,
@@ -31,7 +47,7 @@
     </select>
 
 
-     <select id="findAll" resultMap="VideoRM">
+     <!-- <select id="findAll" resultMap="VideoRM">
         SELECT 
             id,
             original_file_name,
@@ -42,5 +58,26 @@
             duration, 
             created_at 
         FROM videos
+    </select> -->
+
+
+    <select id="findAll" resultMap="TrackingVideoVO">
+        SELECT
+            t1.id as id,
+            t1.original_file_name,
+            t1.original_path,
+            t1.encoded_720p_path,
+            t1.encoded_1080p_path,
+            t1.file_size,
+            t1.created_at,
+            t2.job_id,
+            t2.status as tv_status,
+            t2.total_duration as tv_duration,
+            t2.resolution as tv_resolution
+        FROM
+            videos t1
+        LEFT JOIN tracking_video t2 
+        ON t1.id = t2.video_id 
+        ORDER BY t1.created_at desc
     </select>
 </mapper>

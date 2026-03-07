@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sakata.boilerplate.mapper.primary.UserMapper;
 import com.sakata.boilerplate.mapper.primary.VideoMapper;
 import com.sakata.boilerplate.models.Video;
+import com.sakata.boilerplate.models.vo.TrackingVideoVO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +100,7 @@ public class VideoService {
         String dbFilePath = originalPath + "/" + fileName;
 
         Video video = Video.builder()
+                .uniqueFileName(fileName)
                 .originalFileName(file.getOriginalFilename())
                 .originalPath(dbFilePath) // Lưu đường dẫn string vào DB
                 .fileSize(file.getSize())
@@ -120,13 +126,6 @@ public class VideoService {
             video.setStatus("PROCESSING");
             videoMapper.updateVideoDynamic(video);
 
-            String originalPath = video.getOriginalPath();
-            // String outputFileName = videoId + ".mp4";
-
-            // Lấy duration
-            String duration = encodingService.getVideoDuration(originalPath);
-            video.setDuration(duration);
-
             /**
              * Xử lý output name
              */
@@ -137,19 +136,33 @@ public class VideoService {
             String outputFileName = realFileName.replace(".mp4", "") + ".m3u8";
 
             // Encode 720p
-            log.info("Starting 720p encoding for video {}", videoId);
-            String path720 = encodingService.encodeTo720p(realFileName, outputFileName, folderId);
-            video.setEncoded720Path(path720);
-            videoMapper.updateVideoDynamic(video);
+            String jobId720p = UUID.randomUUID().toString();
+            CompletableFuture.runAsync(() -> {
+                try {
+                    log.info("Starting 720p encoding for video {}", jobId720p);
+                    String path720 = encodingService.encodeTo720p(realFileName, outputFileName, folderId, jobId720p);
+                    video.setEncoded720Path(path720);
+                    video.setStatus("COMPLETED");
+                    videoMapper.updateVideoDynamic(video);
+                } catch (Exception e) {
+                    log.error("Encode 1080p thất bại [{}]", jobId720p, e);
+                }
+            });
 
             // Encode 1080p
-            log.info("Starting 1080p encoding for video {}", videoId);
-            String path1080 = encodingService.encodeTo1080p(realFileName,
-                    outputFileName, folderId);
-            video.setEncoded1080Path(path1080);
-
-            video.setStatus("COMPLETED");
-            videoMapper.updateVideoDynamic(video);
+            String jobId1080p = UUID.randomUUID().toString();
+            CompletableFuture.runAsync(() -> {
+                try {
+                    log.info("Starting 1080p encoding for video {}", jobId1080p);
+                    String path1080 = encodingService.encodeTo1080p(realFileName,
+                            outputFileName, folderId, jobId1080p);
+                    video.setEncoded1080Path(path1080);
+                    video.setStatus("COMPLETED");
+                    videoMapper.updateVideoDynamic(video);
+                } catch (Exception e) {
+                    log.error("Encode 1080p thất bại [{}]", jobId720p, e);
+                }
+            });
 
             log.info("Video {} encoding completed", videoId);
 
@@ -167,13 +180,12 @@ public class VideoService {
      * Lấy thông tin video theo ID
      */
     public Video getVideo(Long id) {
-        var video =  videoMapper.findById(id).orElse(null);
-        System.out.println(":::getVideo"+video);
+        var video = videoMapper.findById(id).orElse(null);
+        System.out.println(":::getVideo" + video);
         return video;
     }
 
-
-    public List<Video> getAllVideos() {
+    public List<TrackingVideoVO> getAllVideos() {
         return videoMapper.findAll();
     }
 }

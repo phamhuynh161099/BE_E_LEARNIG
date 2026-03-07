@@ -11,6 +11,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+// Database table = permission
 public class Role {
     private Long id;
     private String name;

@@ -18,9 +18,11 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+// Database table = permission
 public class Video {
     private Long id;    
     private String originalFileName;
+    private String uniqueFileName;
     private String originalPath;
     private String encoded720Path;
     private String encoded1080Path;

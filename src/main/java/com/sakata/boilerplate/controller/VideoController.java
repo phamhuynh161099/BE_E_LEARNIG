@@ -4,7 +4,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.concurrent.Executors;
 import java.io.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +21,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.sakata.boilerplate.audit.AuditService;
+import com.sakata.boilerplate.dto.FFmpegProgress;
+import com.sakata.boilerplate.models.TrackingVideo;
 import com.sakata.boilerplate.models.Video;
+import com.sakata.boilerplate.service.FFmpegProgressService;
 import com.sakata.boilerplate.service.VideoService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,7 +47,7 @@ import org.springframework.core.io.FileSystemResource;
 public class VideoController {
 
     private final VideoService videoService;
-
+    private final FFmpegProgressService progressService;
     /**
      * Upload video
      */
@@ -63,9 +67,6 @@ public class VideoController {
             // Lưu video
             Video video = videoService.saveOriginalVideo(file);
             videoService.processVideo(video.getId());
-
-            // Bắt đầu xử lý async
-            System.out.println(">>>VIDEO" + video);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Video uploaded successfully",
@@ -178,6 +179,46 @@ public class VideoController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
+    }
+
+     // -- Poll progress (REST) -------------------------------------------
+
+    @GetMapping("/progress/{jobId}")
+    public ResponseEntity<TrackingVideo> getProgress(@PathVariable String jobId) {
+        System.out.println(":::>>progress"+jobId);
+        TrackingVideo p = progressService.getProgress(jobId);
+        if (p == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(p);
+    }
+
+    // -- Stream progress (SSE) - real-time, không cần frontend polling ---
+
+    @GetMapping(value = "/progress/{jobId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamProgress(@PathVariable String jobId) {
+        SseEmitter emitter = new SseEmitter(300_000L); // timeout 5 phút
+
+        System.out.println(">>>streamProgress-start"+jobId);
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                while (true) {
+                    TrackingVideo p = progressService.getProgress(jobId);
+                    if (p == null) { Thread.sleep(500); continue; }
+
+                     System.out.println(">>>streamProgress-data"+p);
+                    emitter.send(p); // gửi object JSON tới client
+
+                    if ("COMPLETED".equals(p.getStatus()) || "FAILED".equals(p.getStatus())) {
+                        emitter.complete();
+                        break;
+                    }
+                    Thread.sleep(1000); // gửi mỗi 1 giây
+                }
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        });
+
+        return emitter;
     }
 
 }

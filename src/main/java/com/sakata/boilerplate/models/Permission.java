@@ -7,6 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+// Database table = permission
 public class Permission {
     private Long id;
     private String name; // "user:read"

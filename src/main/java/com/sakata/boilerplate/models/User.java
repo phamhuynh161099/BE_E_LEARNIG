@@ -17,6 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = { "password", "roles" })
+// Database table = permission
 public class User {
     private Long id;
     private String username;
